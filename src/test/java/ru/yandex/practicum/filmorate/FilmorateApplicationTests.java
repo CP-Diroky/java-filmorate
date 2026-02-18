@@ -46,14 +46,12 @@ class FilmorateApplicationTests {
     @DisplayName("POST при пустом названии")
     @Test
     void shouldReturnErrorWhenNameBlank() throws Exception {
-        String json = """
-                {
-                  "name": "",
-                  "description": "Sci-fi",
-                  "releaseDate": "1999-03-31",
-                  "duration": "PT120M"
-                }
-                """;
+        String json = "{"
+                + "\"name\": \"\","
+                + "\"description\": \"Sci-fi\","
+                + "\"releaseDate\": \"1999-03-31\","
+                + "\"duration\": \"PT120M\""
+                + "}";
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
