@@ -114,8 +114,6 @@ class FilmorateApplicationTests {
     }
 
 
-
-
     @DisplayName("POST при добавлении пользователя")
     @Test
     void shouldAddUser() throws Exception {
@@ -186,8 +184,8 @@ class FilmorateApplicationTests {
                 """;
 
         mockMvc.perform(put("/users")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(json));
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(json));
 
         json = """
                 {
@@ -199,8 +197,8 @@ class FilmorateApplicationTests {
                 }
                 """;
         mockMvc.perform(put("/users")
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(json))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(json))
                 .andExpect(status().is4xxClientError());
     }
 
