@@ -48,7 +48,7 @@ public class FilmController {
             errorMessage = "Дата выпуска не должна быть раньше 28 декабря 1895 года!";
             log.error(errorMessage);
             throw new ConditionsNotMetException(errorMessage);
-        } else if (film.getDuration().toMinutes() < 0) {
+        } else if (film.getDuration() < 0) {
             errorMessage = "Продолжительность фильма должна быть положительным числом!";
             log.error(errorMessage);
             throw new ConditionsNotMetException(errorMessage);
@@ -78,7 +78,7 @@ public class FilmController {
                 && !film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             newFilm.setReleaseDate(film.getReleaseDate());
         }
-        if (film.getDuration() != null && film.getDuration().toHours() > 0) {
+        if (film.getDuration() != null && film.getDuration() > 0) {
             newFilm.setDuration(film.getDuration());
         }
         films.put(newFilm.getId(), newFilm);

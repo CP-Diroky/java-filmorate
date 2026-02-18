@@ -29,7 +29,7 @@ class FilmorateApplicationTests {
                 + "\"name\": \"Matrix\","
                 + "\"description\": \"Sci-fi\","
                 + "\"releaseDate\": \"1999-03-31\","
-                + "\"duration\": \"PT120M\""
+                + "\"duration\": 120"
                 + "}";
         //Здесь в проверке задан id = 2 потому что данные хэщ-таблицы перед тестами не обновляются:
         //попытки очистить хэш-таблицу перед каждым тестом не увенчались успехом :)
@@ -48,7 +48,7 @@ class FilmorateApplicationTests {
                 + "\"name\": \"\","
                 + "\"description\": \"Sci-fi\","
                 + "\"releaseDate\": \"1999-03-31\","
-                + "\"duration\": \"PT120M\""
+                + "\"duration\": 120"
                 + "}";
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -65,7 +65,7 @@ class FilmorateApplicationTests {
                 + "\"name\": \"Matrix\","
                 + "\"description\": \"%s\","
                 + "\"releaseDate\": \"1999-03-31\","
-                + "\"duration\": \"PT120M\""
+                + "\"duration\": PT120M"
                 + "}";
         json = json.formatted(longDesc);
 
@@ -84,7 +84,7 @@ class FilmorateApplicationTests {
                 + "\"name\": \"Matrix\","
                 + "\"description\": \"Sci-fi\","
                 + "\"releaseDate\": \"1999-03-31\","
-                + "\"duration\": \"PT120M\""
+                + "\"duration\": 120"
                 + "}";
 
         mockMvc.perform(post("/films")
@@ -95,7 +95,7 @@ class FilmorateApplicationTests {
                 + "\"name\": \"Матрица\","
                 + "\"description\": \"Научная фантастика\","
                 + "\"releaseDate\": \"1999-03-31\","
-                + "\"duration\": \"PT150M\""
+                + "\"duration\": 150"
                 + "}";
 
         mockMvc.perform(put("/films")
