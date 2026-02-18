@@ -25,14 +25,12 @@ class FilmorateApplicationTests {
     @DisplayName("POST при добавлении одного фильма")
     @Test
     void shouldAddFilm() throws Exception {
-        String json = """
-                {
-                  "name": "Matrix",
-                  "description": "Sci-fi",
-                  "releaseDate": "1999-03-31",
-                  "duration": "PT120M"
-                }
-                """;
+        String json = "{"
+                + "\"name\": \"Matrix\","
+                + "\"description\": \"Sci-fi\","
+                + "\"releaseDate\": \"1999-03-31\","
+                + "\"duration\": \"PT120M\""
+                + "}";
         //Здесь в проверке задан id = 2 потому что данные хэщ-таблицы перед тестами не обновляются:
         //попытки очистить хэш-таблицу перед каждым тестом не увенчались успехом :)
         mockMvc.perform(post("/films")
@@ -63,14 +61,13 @@ class FilmorateApplicationTests {
     void shouldReturnErrorWhenDescriptionTooLong() throws Exception {
         String longDesc = "a".repeat(201);
 
-        String json = """
-                {
-                  "name": "Matrix",
-                  "description": "%s",
-                  "releaseDate": "1999-03-31",
-                  "duration": "PT120M"
-                }
-                """.formatted(longDesc);
+        String json = "{"
+                + "\"name\": \"Matrix\","
+                + "\"description\": \"%s\","
+                + "\"releaseDate\": \"1999-03-31\","
+                + "\"duration\": \"PT120M\""
+                + "}";
+        json = json.formatted(longDesc);
 
         mockMvc.perform(post("/films")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -83,27 +80,23 @@ class FilmorateApplicationTests {
     @Test
     void shouldChangeMovie() throws Exception {
 
-        String json = """
-                {
-                  "name": "Matrix",
-                  "description": "Sci-fi",
-                  "releaseDate": "1999-03-31",
-                  "duration": "PT120M"
-                }
-                """;
+        String json = "{"
+                + "\"name\": \"Matrix\","
+                + "\"description\": \"Sci-fi\","
+                + "\"releaseDate\": \"1999-03-31\","
+                + "\"duration\": \"PT120M\""
+                + "}";
 
         mockMvc.perform(post("/films")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json));
-        json = """
-                {
-                  "id": 1,
-                  "name": "Матрица",
-                  "description": "Научная фантастика",
-                  "releaseDate": "1999-03-31",
-                  "duration": "PT120M"
-                }
-                """;
+        json = "{"
+                + "\"id\": 1,"
+                + "\"name\": \"Матрица\","
+                + "\"description\": \"Научная фантастика\","
+                + "\"releaseDate\": \"1999-03-31\","
+                + "\"duration\": \"PT150M\""
+                + "}";
 
         mockMvc.perform(put("/films")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -115,14 +108,12 @@ class FilmorateApplicationTests {
     @DisplayName("POST при добавлении пользователя")
     @Test
     void shouldAddUser() throws Exception {
-        String json = """
-                {
-                  "email": "diyorka255@mail.com",
-                  "login": "diyor",
-                  "name": "Diyor",
-                  "birthday": "2001-07-08"
-                }
-                """;
+        String json = "{"
+                + "\"email\": \"diyorka255@mail.com\","
+                + "\"login\": \"diyor\","
+                + "\"name\": \"Diyor\","
+                + "\"birthday\": \"2001-07-08\""
+                + "}";
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -135,14 +126,12 @@ class FilmorateApplicationTests {
     @DisplayName("POST при пустой почте")
     @Test
     void shouldReturnErrorWhenEmailBlank() throws Exception {
-        String json = """
-                {
-                  "email": "",
-                  "login": "diyor",
-                  "name": "Diyor",
-                  "birthday": "2001-07-08"
-                }
-                """;
+        String json = "{"
+                + "\"email\": \"\","
+                + "\"login\": \"diyor\","
+                + "\"name\": \"Diyor\","
+                + "\"birthday\": \"2001-07-08\""
+                + "}";
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -153,14 +142,12 @@ class FilmorateApplicationTests {
     @DisplayName("POST при дате рождения в будущем")
     @Test
     void shouldReturnErrorWhenBirthdayInFuture() throws Exception {
-        String json = """
-                {
-                  "email": "diyorka255@mail.com",
-                  "login": "diyor",
-                  "name": "Diyor",
-                  "birthday": "2990-01-01"
-                }
-                """;
+        String json = "{"
+                + "\"email\": \"diyorka255@mail.com\","
+                + "\"login\": \"diyor\","
+                + "\"name\": \"Diyor\","
+                + "\"birthday\": \"20010-07-08\""
+                + "}";
 
         mockMvc.perform(post("/users")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -172,28 +159,24 @@ class FilmorateApplicationTests {
     @DisplayName("PUT при добавлении пользователя c неправильным id")
     @Test
     void shouldReturnErrorWhenIdIsWrong() throws Exception {
-        String json = """
-                {
-                  "email": "diyorka255@mail.com",
-                  "login": "diyor",
-                  "name": "Diyor",
-                  "birthday": "2001-07-08"
-                }
-                """;
+        String json = "{"
+                + "\"email\": \"diyorka255@mail.com\","
+                + "\"login\": \"diyor\","
+                + "\"name\": \"Diyor\","
+                + "\"birthday\": \"2001-07-08\""
+                + "}";
 
         mockMvc.perform(put("/users")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(json));
 
-        json = """
-                {
-                   "id": 2,
-                  "email": "dima255@mail.com",
-                  "login": "dima",
-                  "name": "Dmitriy",
-                  "birthday": "2002-07-08"
-                }
-                """;
+        json = "{"
+                + "\"id\": 2,"
+                + "\"email\": \"diyorka255@mail.com\","
+                + "\"login\": \"diyor\","
+                + "\"name\": \"Diyor\","
+                + "\"birthday\": \"2001-07-08\""
+                + "}";
         mockMvc.perform(put("/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(json))
