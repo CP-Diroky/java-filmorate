@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+import jakarta.validation.Valid;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
@@ -15,7 +16,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/films")
 public class FilmController {
-    Map<Long, Film> films = new HashMap<>();
+    private Map<Long, Film> films = new HashMap<>();
     private static final Logger log = LoggerFactory.getLogger(FilmController.class);
 
 
@@ -34,22 +35,14 @@ public class FilmController {
     }
 
     @PostMapping
-    public Film addFilm(@RequestBody Film film) {
+    public Film addFilm(@Valid @RequestBody Film film) {
         String errorMessage;
-        if (film == null || film.getName().isBlank()) {
-            errorMessage = "Название фильма не должно быть пустым!";
-            log.error(errorMessage);
-            throw new ConditionsNotMetException(errorMessage);
-        } else if (film.getDescription().length() > 200) {
-            errorMessage = "Максимальная длина описания не должна быть более 200 символов";
+        if (film == null) {
+            errorMessage = "Неверный ввод!";
             log.error(errorMessage);
             throw new ConditionsNotMetException(errorMessage);
         } else if (film.getReleaseDate().isBefore(LocalDate.of(1895, 12, 28))) {
             errorMessage = "Дата выпуска не должна быть раньше 28 декабря 1895 года!";
-            log.error(errorMessage);
-            throw new ConditionsNotMetException(errorMessage);
-        } else if (film.getDuration() < 0) {
-            errorMessage = "Продолжительность фильма должна быть положительным числом!";
             log.error(errorMessage);
             throw new ConditionsNotMetException(errorMessage);
         }

@@ -17,7 +17,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/users")
 public class UserController {
-    Map<Long, User> users = new HashMap<>();
+    private Map<Long, User> users = new HashMap<>();
     private static final Logger log = LoggerFactory.getLogger(UserController.class);
 
 
@@ -39,12 +39,8 @@ public class UserController {
     @PostMapping
     public User addUser(@Valid @RequestBody User user) {
         String errorMessage;
-        if (user == null || user.getEmail().isBlank()) {
-            errorMessage = "Почта не должна быть пустой!";
-            log.error(errorMessage);
-            throw new ConditionsNotMetException(errorMessage);
-        } else if (user.getLogin().isBlank()) {
-            errorMessage = "Логин не может быть пустым!";
+        if (user == null) {
+            errorMessage = "Неверный ввод!";
             log.error(errorMessage);
             throw new ConditionsNotMetException(errorMessage);
         } else if (user.getBirthday().isAfter(LocalDate.now())) {
@@ -62,7 +58,7 @@ public class UserController {
     }
 
     @PutMapping
-    public User changeUser(@Valid @RequestBody User user) {
+    public User changeUser(@RequestBody User user) {
         String errorMessage;
         if (user == null || !users.containsKey(user.getId())) {
             errorMessage = "Пользователь не найден!";
