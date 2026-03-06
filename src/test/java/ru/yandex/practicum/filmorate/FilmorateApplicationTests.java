@@ -20,7 +20,9 @@ class FilmorateApplicationTests {
 
     @Autowired
     MockMvc mockMvc;
-    static FilmController filmController = new FilmController();
+    @Autowired
+    FilmController filmController;
+
 
     @DisplayName("POST при добавлении одного фильма")
     @Test
