@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Size;
 import lombok.Data;
 
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 
 @Data
@@ -20,4 +22,5 @@ public class Film {
     private LocalDate releaseDate;
     @Min(1)
     private Integer duration;
+    private Set<Long> usersId = new HashSet<>(); //Множество id пользователей которые поставили лайк фильму
 }
