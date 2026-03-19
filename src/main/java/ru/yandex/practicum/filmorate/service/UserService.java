@@ -43,6 +43,23 @@ public class UserService {
         return userStorage.getUserById(id);
     }
 
+    public User addFriend(Long id, Long friendId) {
+        User friend = userStorage.getUserById(friendId); //Проверяем есть ли такой id
+        User user = userStorage.getUserById(id);
+        if (userStorage.getUserById(id).getFriends().contains(friendId) &&
+                userStorage.getUserById(friendId).getFriends().contains(id)) {
+            log.info("Друг уже добавлен");
+            return user;
+        }
+        userStorage.getUserById(id).getFriendshipStatusMap().put(friendId, FriendshipStatus.ACCEPTED);
+        userStorage.getUserById(friendId).getFriendshipStatusMap().put(id, FriendshipStatus.ACCEPTED);
+        userStorage.getUserById(id).getFriends().add(friendId);
+        userStorage.getUserById(friendId).getFriends().add(id);
+        log.info("Друг добавлен");
+        return user;
+    }
+
+
     public User sendFriendshipRequest(Long id, Long friendId) {
         User user = checkFriendshipStatus(id, friendId);
         userStorage.getUserById(id).getFriendshipStatusMap().put(friendId, FriendshipStatus.NOT_ACCEPTED);
