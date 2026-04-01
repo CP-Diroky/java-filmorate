@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.storage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -42,7 +43,11 @@ public class FilmDbStorage implements FilmStorage {
     @Override
     public Film getFilmById(Long id) {
         String sql = "SELECT * FROM films WHERE id = ?";
-        return jdbcTemplate.queryForObject(sql, this::mapRowToFilm, id);
+        try {
+            return jdbcTemplate.queryForObject(sql, this::mapRowToFilm, id);
+        } catch (RuntimeException e) { //Будем ловить исключения и передавать их как 404
+            throw new NotFoundException("Фильм не найден");
+        }
     }
 
     @Override
@@ -61,6 +66,9 @@ public class FilmDbStorage implements FilmStorage {
             throw new ConditionsNotMetException(errorMessage);
         }
 
+        validateGenres(film.getGenres());
+        validateMpa(film.getMpa().getId());
+
         String sql = "INSERT INTO films(name, description, release_date, duration, mpa_id) VALUES (?, ?, ?, ?, ?)";
 
         KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -78,8 +86,8 @@ public class FilmDbStorage implements FilmStorage {
         film.setId(keyHolder.getKey().longValue());
 
         //Добавляем жанры
-        if (film.getGenre() != null) {
-            for (Genre genre : film.getGenre()) {
+        if (film.getGenres() != null) {
+            for (Genre genre : film.getGenres()) {
                 jdbcTemplate.update(
                         "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)",
                         film.getId(),
@@ -107,6 +115,9 @@ public class FilmDbStorage implements FilmStorage {
             throw new ConditionsNotMetException(errorMessage);
         }
 
+        validateGenres(film.getGenres());
+        validateMpa(film.getMpa().getId());
+
         String sql = "UPDATE films SET name=?, description=?, release_date=?, duration=?, mpa_id=? WHERE id=?";
 
         int rows = jdbcTemplate.update(sql,
@@ -125,8 +136,8 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update("DELETE FROM film_genres WHERE film_id = ?", film.getId());
 
         // добавить новые
-        if (film.getGenre() != null) {
-            for (Genre genre : film.getGenre()) {
+        if (film.getGenres() != null) {
+            for (Genre genre : film.getGenres()) {
                 jdbcTemplate.update(
                         "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)",
                         film.getId(),
@@ -188,7 +199,7 @@ public class FilmDbStorage implements FilmStorage {
         }, mpaId);
 
         film.setMpa(mpa);
-        film.setGenre(getGenres(film.getId()));
+        film.setGenres(getGenres(film.getId()));
         film.setUsersId(getLikesIds(film.getId()));
         return film;
     }
@@ -217,5 +228,31 @@ public class FilmDbStorage implements FilmStorage {
                 (rs, rowNum) -> rs.getLong("user_id"),
                 filmId
         ));
+    }
+
+    //Проверка, что рейтинг существует
+
+    private void validateMpa(Long mpaId) {
+        String sql = "SELECT COUNT(*) FROM mpa WHERE id = ?";
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, mpaId);
+        if (count == null || count == 0) {
+            throw new NotFoundException("Рейтинг не найден");
+        }
+    }
+
+    //Проверка жанра
+
+    private void validateGenres(Set<Genre> genres) {
+        if (genres == null) {
+            return;
+        }
+
+        for (Genre genre : genres) {
+            String sql = "SELECT COUNT(*) FROM genres WHERE id = ?";
+            Integer count = jdbcTemplate.queryForObject(sql, Integer.class, genre.getId());
+            if (count == null || count == 0) {
+                throw new NotFoundException("Жанр не найден");
+            }
+        }
     }
 }
