@@ -14,7 +14,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
 //Класс для хранения данных фильмов в памяти, а не в БД
+
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
 
