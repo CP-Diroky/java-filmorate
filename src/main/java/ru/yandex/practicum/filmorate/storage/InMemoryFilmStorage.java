@@ -12,8 +12,9 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
+//Класс для хранения данных фильмов в памяти, а не в БД
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
 
@@ -87,5 +88,29 @@ public class InMemoryFilmStorage implements FilmStorage {
         }
         return films.get(id);
     }
+
+    @Override
+    public Film addLike(Long filmId, Long userId) {
+        films.get(filmId).getUsersId().add(userId);
+        return films.get(filmId);
+    }
+
+    @Override
+    public Film deleteLike(Long filmId, Long userId) {
+        films.get(filmId).getUsersId().remove(userId);
+        return films.get(filmId);
+    }
+
+    @Override
+    public Collection<Film> getPopularFilms(int count) {
+        List<Film> filmsFiltered;
+        filmsFiltered = films.values().stream()
+                .sorted((film1, film2) -> {
+                    return film2.getUsersId().size() - film1.getUsersId().size();
+                })
+                .limit(count).toList();
+        return filmsFiltered;
+    }
+
 
 }
