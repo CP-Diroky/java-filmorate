@@ -20,7 +20,9 @@ import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Repository
 @Qualifier("filmDbStorage")
@@ -85,15 +87,7 @@ public class FilmDbStorage implements FilmStorage {
         film.setId(keyHolder.getKey().longValue());
 
         //Добавляем жанры
-        if (film.getGenres() != null) {
-            for (Genre genre : film.getGenres()) {
-                jdbcTemplate.update(
-                        "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)",
-                        film.getId(),
-                        genre.getId()
-                );
-            }
-        }
+        saveFilmGenres(film.getId(), film.getGenres());
 
         return film;
     }
@@ -135,15 +129,8 @@ public class FilmDbStorage implements FilmStorage {
         jdbcTemplate.update("DELETE FROM film_genres WHERE film_id = ?", film.getId());
 
         // добавить новые
-        if (film.getGenres() != null) {
-            for (Genre genre : film.getGenres()) {
-                jdbcTemplate.update(
-                        "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)",
-                        film.getId(),
-                        genre.getId()
-                );
-            }
-        }
+        saveFilmGenres(film.getId(), film.getGenres());
+
         return film;
     }
 
@@ -242,16 +229,43 @@ public class FilmDbStorage implements FilmStorage {
     //Проверка жанра
 
     private void validateGenres(Set<Genre> genres) {
-        if (genres == null) {
+        if (genres == null || genres.isEmpty()) {
             return;
         }
 
-        for (Genre genre : genres) {
-            String sql = "SELECT COUNT(*) FROM genres WHERE id = ?";
-            Integer count = jdbcTemplate.queryForObject(sql, Integer.class, genre.getId());
-            if (count == null || count == 0) {
-                throw new NotFoundException("Жанр не найден");
-            }
+        Set<Long> genreIds = genres.stream()
+                .map(Genre::getId)
+                .collect(Collectors.toSet());
+
+        String placeholders = genreIds.stream()
+                .map(id -> "?")
+                .collect(Collectors.joining(", "));
+
+        String sql = "SELECT id FROM genres WHERE id IN (" + placeholders + ")";
+
+        List<Long> existingIds = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> rs.getLong("id"),
+                genreIds.toArray()
+        );
+
+        if (existingIds.size() != genreIds.size()) {
+            throw new NotFoundException("Жанр не найден");
         }
+    }
+
+
+    private void saveFilmGenres(Long filmId, Set<Genre> genres) {
+        if (genres == null || genres.isEmpty()) {
+            return;
+        }
+
+        String sql = "INSERT INTO film_genres (film_id, genre_id) VALUES (?, ?)";
+
+        jdbcTemplate.batchUpdate(sql, genres, genres.size(),
+                (ps, genre) -> {
+                    ps.setLong(1, filmId);
+                    ps.setLong(2, genre.getId());
+                });
     }
 }
