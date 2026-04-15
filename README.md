@@ -27,10 +27,3 @@
     SELECT * 
     FROM films;
 
-3. Получить список друзей пользователя
-
-
-    SELECT u.*
-    FROM users AS u
-    JOIN friends AS f ON u.id = f.friend_id
-    WHERE f.user_id = 1 AND f.status = 'ACCEPTED';
