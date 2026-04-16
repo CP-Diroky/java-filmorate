@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.service;
 
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -9,6 +8,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
+import java.util.List;
 
 @Service
 public class FilmService {
@@ -39,9 +39,9 @@ public class FilmService {
     }
 
     public Film addLike(Long id, Long userId) {
-        userStorage.getUserById(userId); //Проверяем есть ли такой пользователь
+        userStorage.getUserById(userId);
         filmStorage.getFilmById(id);
-        return filmStorage.addLike(id,userId);
+        return filmStorage.addLike(id, userId);
     }
 
     public Film deleteLike(Long id, Long userId) {
@@ -57,4 +57,9 @@ public class FilmService {
         return filmStorage.getPopularFilms(count);
     }
 
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        userStorage.getUserById(userId);
+        userStorage.getUserById(friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
+    }
 }
