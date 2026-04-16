@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 
+import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -9,6 +10,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
+import java.util.List;
 
 @Service
 public class FilmService {
@@ -55,6 +57,12 @@ public class FilmService {
             count = 10;
         }
         return filmStorage.getPopularFilms(count);
+    }
+
+    public List<Film> getComnFilms(Long userId, Long friendId) {
+        userStorage.getUserById(userId);
+        userStorage.getUserById(friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 
 }

@@ -113,6 +113,13 @@ public class InMemoryFilmStorage implements FilmStorage {
                 .limit(count).toList();
         return filmsFiltered;
     }
-
+    @Override
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        return films.values().stream()
+                .filter(film -> film.getUsersId().contains(userId)
+                        && film.getUsersId().contains(friendId))
+                .sorted((f1, f2) -> f2.getUsersId().size() - f1.getUsersId().size())
+                .toList();  // возвращает List
+    }
 
 }
