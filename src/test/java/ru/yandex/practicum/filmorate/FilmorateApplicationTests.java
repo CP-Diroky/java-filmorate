@@ -17,6 +17,7 @@ import ru.yandex.practicum.filmorate.storage.UserDbStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -257,10 +258,10 @@ class FilmorateApplicationTests {
         filmStorage.addLike(film1.getId(), user2.getId());
         filmStorage.addLike(film2.getId(), user1.getId());
 
-        Collection<Film> popularFilms = filmStorage.getPopularFilms(10);
+        List<Film> popularFilms = filmStorage.getPopularFilms(10, null, null);
 
-        Film firstFilm = popularFilms.iterator().next();
-        assertThat(firstFilm.getId()).isEqualTo(film1.getId());
+        assertThat(popularFilms).isNotEmpty();
+        assertThat(popularFilms.get(0).getId()).isEqualTo(film1.getId());
     }
 
     private Film createFilm(String name) {
@@ -315,6 +316,4 @@ class FilmorateApplicationTests {
         assertThat(mpa.getId()).isEqualTo(1L);
         assertThat(mpa.getName()).isEqualTo("G");
     }
-
-
 }
