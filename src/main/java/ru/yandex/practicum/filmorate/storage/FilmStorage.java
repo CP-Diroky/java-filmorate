@@ -20,4 +20,6 @@ public interface FilmStorage {
 
     Collection<Film> getPopularFilms(int count);
 
+    Collection<Film> getRecommendation(Long userId);
+
 }

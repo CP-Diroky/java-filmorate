@@ -17,6 +17,8 @@ import java.util.Map;
 
 //Класс для хранения данных фильмов в памяти, а не в БД
 
+/*
+
 @Component
 public class InMemoryFilmStorage implements FilmStorage {
 
@@ -116,3 +118,5 @@ public class InMemoryFilmStorage implements FilmStorage {
 
 
 }
+
+ */

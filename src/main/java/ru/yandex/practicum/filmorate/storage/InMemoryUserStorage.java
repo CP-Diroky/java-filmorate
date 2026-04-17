@@ -13,6 +13,9 @@ import java.util.*;
 
 //Класс для хранения данных пользователей в памяти, а не в БД
 
+/*
+
+
 @Component
 public class InMemoryUserStorage implements UserStorage {
     private Map<Long, User> users = new HashMap<>();
@@ -132,3 +135,5 @@ public class InMemoryUserStorage implements UserStorage {
         return commonFriends;
     }
 }
+
+ */

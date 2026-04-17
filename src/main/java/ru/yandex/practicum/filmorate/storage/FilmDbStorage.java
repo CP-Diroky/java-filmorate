@@ -161,6 +161,53 @@ public class FilmDbStorage implements FilmStorage {
         return jdbcTemplate.query(sql, this::mapRowToFilm, count);
     }
 
+    //Метод для получения рекомендаций
+    @Override
+    public Collection<Film> getRecommendation(Long userId) {
+        //Проверяем есть ли записи в таблице film_likes
+        String sql = "SELECT film_id FROM film_likes";
+        List<Long> filmsIds = jdbcTemplate.queryForList(sql, Long.class);
+
+        if (filmsIds.isEmpty()) throw new ConditionsNotMetException("Лайков нет!");
+
+        sql = "SELECT film_id FROM film_likes WHERE user_id = ?"; //Получаем список фильмов с лайками от userId
+        List<Long> filmsLikedByUserId = jdbcTemplate.queryForList(sql,Long.class, userId);
+
+        int maxMatches = 0;
+        int currentMatches = 0;
+        Long otherIdWithMaxMatches = 0L;
+
+        sql = "SELECT DISTINCT user_id FROM film_likes WHERE user_id <> ?";
+
+        //Список остальных пользователей, которые поставили лайки
+        List<Long> otherIds = jdbcTemplate.queryForList(sql,Long.class, userId);
+        List<Long> filmsLikedByOtherId; //Список фильмов, которые получили лайки от другого пользователя
+
+        sql = "SELECT film_id FROM film_likes WHERE user_id = ?";
+
+        for (Long otherId : otherIds) {
+            filmsLikedByOtherId = jdbcTemplate.queryForList(sql, Long.class, otherId);
+            for (Long filmId: filmsLikedByOtherId) {
+                if (filmsLikedByUserId.contains(filmId)) currentMatches ++;
+            }
+            if (currentMatches > maxMatches) {
+                maxMatches = currentMatches;
+                otherIdWithMaxMatches = otherId;
+            }
+            currentMatches = 0;
+        }
+
+        if (otherIdWithMaxMatches.equals(0L)) return List.of(); //
+
+        filmsLikedByOtherId = jdbcTemplate.queryForList(sql, Long.class, otherIdWithMaxMatches);
+
+        return filmsLikedByOtherId.stream()
+                .filter(filmId -> !(filmsLikedByUserId.contains(filmId)))
+                .map(this::getFilmById).toList();
+
+
+    }
+
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
         Film film = new Film();
         film.setId(rs.getLong("id"));
