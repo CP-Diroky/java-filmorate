@@ -77,7 +77,7 @@ public class FilmService {
 
             log.info(searchByTypes);
 
-            switch (searchByType){
+            switch (searchByType) {
                 case "director" -> films.addAll(filmStorage.getSearchedFilmsByDirector(query));
                 case "title" -> films.addAll(filmStorage.getSearchedFilmsByTitle(query));
                 default -> throw new NotFoundException("Тип поиска не найден");
