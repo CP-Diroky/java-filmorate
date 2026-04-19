@@ -131,4 +131,12 @@ public class InMemoryUserStorage implements UserStorage {
                 .map(users::get).toList();
         return commonFriends;
     }
+
+    @Override
+    public void deleteUser(Long userId) {
+        if (userId == null || !users.containsKey(userId)) {
+            throw new NotFoundException("Пользователь не найден");
+        }
+        users.remove(userId);
+    }
 }

@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -159,6 +160,20 @@ public class FilmDbStorage implements FilmStorage {
                 LIMIT ?
                 """;
         return jdbcTemplate.query(sql, this::mapRowToFilm, count);
+    }
+
+    @Override
+    @Transactional
+    public void deleteFilmById(Long id) {
+        getFilmById(id);
+        String deleteFromFilmLikes = "DELETE FROM film_likes WHERE film_id = ?";
+        String deleteFromFilmGenres = "DELETE FROM film_genres WHERE film_id = ?";
+        String deleteFilm = "DELETE FROM films WHERE id = ?";
+
+        jdbcTemplate.update(deleteFromFilmLikes, id);
+        jdbcTemplate.update(deleteFromFilmGenres, id);
+        jdbcTemplate.update(deleteFilm, id);
+
     }
 
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {

@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 
+import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -57,4 +58,8 @@ public class FilmService {
         return filmStorage.getPopularFilms(count);
     }
 
+    public void deleteFilmById(@Positive Long filmId) {
+        getFilmById(filmId);
+        filmStorage.deleteFilmById(filmId);
+    }
 }

@@ -20,4 +20,6 @@ public interface FilmStorage {
 
     Collection<Film> getPopularFilms(int count);
 
+    void deleteFilmById(Long id);
+
 }

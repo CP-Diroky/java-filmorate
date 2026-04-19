@@ -114,5 +114,14 @@ public class InMemoryFilmStorage implements FilmStorage {
         return filmsFiltered;
     }
 
+    @Override
+    public void deleteFilmById(Long id) {
+        if (id == null || !films.containsKey(id)) {
+            throw new NotFoundException("Фильм не найден!");
+        }
+        films.remove(id);
+        log.info("Фильм с id {} удален", id);
+    }
+
 
 }
