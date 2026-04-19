@@ -5,9 +5,7 @@ import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Director;
-import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.storage.DirectorsStorage;
-import ru.yandex.practicum.filmorate.storage.GenreStorage;
 
 import java.util.Collection;
 
