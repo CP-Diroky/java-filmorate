@@ -407,7 +407,9 @@ public class FilmDbStorage implements FilmStorage {
             if (exist == 1) {
                 return true;
             }
-        } catch (NullPointerException ignore) {}
+        } catch (NullPointerException ignore) {
+            throw new NotFoundException("Режиссёр не найден");
+        }
 
         throw new NotFoundException("Режиссёр не найден");
     }
