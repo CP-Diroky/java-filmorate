@@ -171,7 +171,7 @@ public class FilmDbStorage implements FilmStorage {
         if (filmsIds.isEmpty()) throw new ConditionsNotMetException("Лайков нет!");
 
         sql = "SELECT film_id FROM film_likes WHERE user_id = ?"; //Получаем список фильмов с лайками от userId
-        List<Long> filmsLikedByUserId = jdbcTemplate.queryForList(sql,Long.class, userId);
+        List<Long> filmsLikedByUserId = jdbcTemplate.queryForList(sql, Long.class, userId);
 
         int maxMatches = 0;
         int currentMatches = 0;
@@ -180,15 +180,15 @@ public class FilmDbStorage implements FilmStorage {
         sql = "SELECT DISTINCT user_id FROM film_likes WHERE user_id <> ?";
 
         //Список остальных пользователей, которые поставили лайки
-        List<Long> otherIds = jdbcTemplate.queryForList(sql,Long.class, userId);
+        List<Long> otherIds = jdbcTemplate.queryForList(sql, Long.class, userId);
         List<Long> filmsLikedByOtherId; //Список фильмов, которые получили лайки от другого пользователя
 
         sql = "SELECT film_id FROM film_likes WHERE user_id = ?";
 
         for (Long otherId : otherIds) {
             filmsLikedByOtherId = jdbcTemplate.queryForList(sql, Long.class, otherId);
-            for (Long filmId: filmsLikedByOtherId) {
-                if (filmsLikedByUserId.contains(filmId)) currentMatches ++;
+            for (Long filmId : filmsLikedByOtherId) {
+                if (filmsLikedByUserId.contains(filmId)) currentMatches++;
             }
             if (currentMatches > maxMatches) {
                 maxMatches = currentMatches;
