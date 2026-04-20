@@ -9,6 +9,7 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -17,6 +18,7 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashSet;
@@ -138,6 +140,7 @@ public class FilmDbStorage implements FilmStorage {
     public Film addLike(Long filmId, Long userId) {
         String sql = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
+        addEventLike(sql, userId, filmId);
         return getFilmById(filmId);
     }
 
@@ -145,6 +148,7 @@ public class FilmDbStorage implements FilmStorage {
     public Film deleteLike(Long filmId, Long userId) {
         String sql = "DELETE FROM film_likes WHERE film_id = ? AND user_id = ?";
         jdbcTemplate.update(sql, filmId, userId);
+        addEventLike(sql, userId, filmId);
         return getFilmById(filmId);
     }
 
@@ -267,5 +271,26 @@ public class FilmDbStorage implements FilmStorage {
                     ps.setLong(1, filmId);
                     ps.setLong(2, genre.getId());
                 });
+    }
+
+    private void addEventLike(String sql, Long userId, Long entityId) {
+        String method = sql.split(" ")[0];
+        Event.EventType eventType = Event.EventType.LIKE;
+        Event.Operation operation;
+        Long timestamp = Instant.now().toEpochMilli();
+        switch (method) {
+            case "INSERT":
+                operation = Event.Operation.ADD;
+                break;
+            case "DELETE":
+                operation = Event.Operation.REMOVE;
+                break;
+            default:
+                throw new IllegalArgumentException("Неверный метод");
+        }
+        String event = "INSERT INTO events (user_id, timestamp, event_type, operation, entity_id) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
+        jdbcTemplate.update(event, userId, timestamp, eventType.name(), operation.name(), entityId);
     }
 }

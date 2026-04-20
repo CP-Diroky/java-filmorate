@@ -9,12 +9,14 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashSet;
@@ -125,7 +127,7 @@ public class UserDbStorage implements UserStorage {
 
         String sql = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, id, friendId);
-
+        addEventFriend(sql, id, friendId);
         return getUserById(id);
     }
 
@@ -137,7 +139,7 @@ public class UserDbStorage implements UserStorage {
 
         String sql = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
         jdbcTemplate.update(sql, id, friendId);
-
+        addEventFriend(sql, id, friendId);
         return getUserById(id);
     }
 
@@ -173,6 +175,20 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.query(sql, this::mapRowToUser, id, otherId);
     }
 
+    @Override
+    public Collection<Event> getFeed(Long id) {
+        getUserById(id);
+
+        String sql = """
+                SELECT e.*
+                FROM events e
+                JOIN friends f ON e.user_id = f.friend_id
+                WHERE f.user_id = ?
+                """;
+        return jdbcTemplate.query(sql, this::mapRowToEvent, id);
+
+    }
+
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
         User user = new User();
         user.setId(rs.getLong("id"));
@@ -188,6 +204,17 @@ public class UserDbStorage implements UserStorage {
         return user;
     }
 
+    private Event mapRowToEvent(ResultSet rs, int rownum) throws SQLException {
+        Event event = new Event();
+        event.setId(rs.getLong("id"));
+        event.setUser_id(rs.getLong("user_id"));
+        event.setTimestamp(rs.getLong("timestamp"));
+        event.setEventType(Event.EventType.valueOf(rs.getString("event_type")));
+        event.setOperation(Event.Operation.valueOf(rs.getString("operation")));
+        event.setEntityId(rs.getLong("entity_id"));
+        return event;
+    }
+
     private Set<Long> getFriendsIds(Long userId) {
         String sql = "SELECT friend_id FROM friends WHERE user_id = ?";
 
@@ -196,6 +223,27 @@ public class UserDbStorage implements UserStorage {
                 (rs, rowNum) -> rs.getLong("friend_id"),
                 userId
         ));
+    }
+
+    private void addEventFriend(String sql, Long userId, Long entityId) {
+        String method = sql.split(" ")[0];
+        Event.EventType eventType = Event.EventType.FRIEND;
+        Event.Operation operation;
+        Long timestamp = Instant.now().toEpochMilli();
+        switch (method) {
+            case "INSERT":
+                operation = Event.Operation.ADD;
+                break;
+            case "DELETE":
+                operation = Event.Operation.REMOVE;
+                break;
+            default:
+                throw new IllegalArgumentException("Неверный метод");
+        }
+        String event = "INSERT INTO events (user_id, timestamp, event_type, operation, entity_id) " +
+                "VALUES (?, ?, ?, ?, ?)";
+
+        jdbcTemplate.update(event, userId, timestamp, eventType.name(), operation.name(), entityId);
     }
 
 }

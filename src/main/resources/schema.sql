@@ -49,3 +49,12 @@ CREATE TABLE IF NOT EXISTS friends (
     FOREIGN KEY (friend_id) REFERENCES users (id),
     UNIQUE (user_id, friend_id)
 );
+
+CREATE TABLE IF NOT EXISTS events (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT REFERENCES users (id),
+    timestamp BIGINT NOT NULL,
+    event_type varchar NOT NULL CHECK (event_type IN ('LIKE', 'REVIEW', 'FRIEND')),
+    operation varchar NOT NULL CHECK (operation IN ('ADD', 'REMOVE', 'UPDATE')),
+    entity_id BIGINT
+);
