@@ -70,6 +70,7 @@ public class FilmDbStorage implements FilmStorage {
 
         validateGenres(film.getGenres());
         validateMpa(film.getMpa().getId());
+        validateDirectors(film.getDirectors());
 
         String sql = "INSERT INTO films(name, description, release_date, duration, mpa_id) VALUES (?, ?, ?, ?, ?)";
 
@@ -114,6 +115,7 @@ public class FilmDbStorage implements FilmStorage {
 
         validateGenres(film.getGenres());
         validateMpa(film.getMpa().getId());
+        validateDirectors(film.getDirectors());
 
         String sql = "UPDATE films SET name=?, description=?, release_date=?, duration=?, mpa_id=? WHERE id=?";
 
@@ -173,6 +175,8 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getSortDirectorsFilmsByLikes(Long directorId) {
+        directorExist(directorId);
+
         String sql = """
                 SELECT f.*,
                 COUNT(fl.user_id) AS likes_count
@@ -188,6 +192,7 @@ public class FilmDbStorage implements FilmStorage {
 
     @Override
     public Collection<Film> getSortDirectorsFilmsByYear(Long directorId) {
+        directorExist(directorId);
         String sql = """
                 SELECT f.*
                 FROM films f
@@ -196,6 +201,7 @@ public class FilmDbStorage implements FilmStorage {
                 GROUP BY f.id
                 ORDER BY f.release_date
                 """;
+
         return jdbcTemplate.query(sql, this::mapRowToFilm, directorId);
     }
 
@@ -331,6 +337,34 @@ public class FilmDbStorage implements FilmStorage {
         }
     }
 
+    //Проверка режиссёров
+
+    private void validateDirectors(Set<Director> directors) {
+        if (directors == null || directors.isEmpty()) {
+            return;
+        }
+
+        Set<Long> genreIds = directors.stream()
+                .map(Director::getId)
+                .collect(Collectors.toSet());
+
+        String placeholders = genreIds.stream()
+                .map(id -> "?")
+                .collect(Collectors.joining(", "));
+
+        String sql = "SELECT id FROM directors WHERE id IN (" + placeholders + ")";
+
+        List<Long> existingIds = jdbcTemplate.query(
+                sql,
+                (rs, rowNum) -> rs.getLong("id"),
+                genreIds.toArray()
+        );
+
+        if (existingIds.size() != genreIds.size()) {
+            throw new NotFoundException("Режиссёр не найден");
+        }
+    }
+
 
     private void saveFilmGenres(Long filmId, Set<Genre> genres) {
         if (genres == null || genres.isEmpty()) {
@@ -358,5 +392,23 @@ public class FilmDbStorage implements FilmStorage {
                     ps.setLong(1, filmId);
                     ps.setLong(2, director.getId());
                 });
+    }
+
+    private boolean directorExist(Long directorId) {
+        String sql = "SELECT COUNT(*) as cnt FROM directors WHERE id = ?";
+
+        try {
+            int exist = jdbcTemplate.queryForObject(
+                    sql,
+                    (rs, rowNum) -> rs.getInt("cnt"),
+                    directorId
+            );
+
+            if (exist == 1) {
+                return true;
+            }
+        } catch (NullPointerException ignore) {}
+
+        throw new NotFoundException("Режиссёр не найден");
     }
 }

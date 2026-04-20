@@ -73,10 +73,6 @@ public class FilmService {
         Collection<Film> films = new ArrayList<>();
 
         for (String searchByType : searchByTypes.split(",")) {
-            log.info(searchByType);
-
-            log.info(searchByTypes);
-
             switch (searchByType) {
                 case "director" -> films.addAll(filmStorage.getSearchedFilmsByDirector(query));
                 case "title" -> films.addAll(filmStorage.getSearchedFilmsByTitle(query));
