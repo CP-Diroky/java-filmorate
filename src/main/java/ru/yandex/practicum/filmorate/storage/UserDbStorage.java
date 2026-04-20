@@ -16,7 +16,6 @@ import java.sql.Date;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Collection;
 import java.util.HashSet;
@@ -28,9 +27,11 @@ public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
     private static final Logger log = LoggerFactory.getLogger(UserDbStorage.class);
+    private final EventDbStorage eventDbStorage;
 
-    public UserDbStorage(JdbcTemplate jdbcTemplate) {
+    public UserDbStorage(JdbcTemplate jdbcTemplate, EventDbStorage eventDbStorage) {
         this.jdbcTemplate = jdbcTemplate;
+        this.eventDbStorage = eventDbStorage;
     }
 
     @Override
@@ -127,7 +128,7 @@ public class UserDbStorage implements UserStorage {
 
         String sql = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, id, friendId);
-        addEventFriend(sql, id, friendId);
+        eventDbStorage.addEvent(sql, id, friendId, Event.EventType.FRIEND);
         return getUserById(id);
     }
 
@@ -139,7 +140,7 @@ public class UserDbStorage implements UserStorage {
 
         String sql = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
         jdbcTemplate.update(sql, id, friendId);
-        addEventFriend(sql, id, friendId);
+        eventDbStorage.addEvent(sql, id, friendId, Event.EventType.FRIEND);
         return getUserById(id);
     }
 
@@ -223,27 +224,6 @@ public class UserDbStorage implements UserStorage {
                 (rs, rowNum) -> rs.getLong("friend_id"),
                 userId
         ));
-    }
-
-    private void addEventFriend(String sql, Long userId, Long entityId) {
-        String method = sql.split(" ")[0];
-        Event.EventType eventType = Event.EventType.FRIEND;
-        Event.Operation operation;
-        Long timestamp = Instant.now().toEpochMilli();
-        switch (method) {
-            case "INSERT":
-                operation = Event.Operation.ADD;
-                break;
-            case "DELETE":
-                operation = Event.Operation.REMOVE;
-                break;
-            default:
-                throw new IllegalArgumentException("Неверный метод");
-        }
-        String event = "INSERT INTO events (user_id, timestamp, event_type, operation, entity_id) " +
-                "VALUES (?, ?, ?, ?, ?)";
-
-        jdbcTemplate.update(event, userId, timestamp, eventType.name(), operation.name(), entityId);
     }
 
 }
