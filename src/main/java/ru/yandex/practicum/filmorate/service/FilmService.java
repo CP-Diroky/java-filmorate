@@ -44,7 +44,7 @@ public class FilmService {
     }
 
     public Film addLike(Long id, Long userId) {
-        userStorage.getUserById(userId); //Проверяем есть ли такой пользователь
+        userStorage.getUserById(userId);
         filmStorage.getFilmById(id);
         return filmStorage.addLike(id, userId);
     }
@@ -64,5 +64,11 @@ public class FilmService {
             genreStorage.getGenreById(genreId);
         }
         return filmStorage.getPopularFilms(count, genreId, year);
+    }
+
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        userStorage.getUserById(userId);
+        userStorage.getUserById(friendId);
+        return filmStorage.getCommonFilms(userId, friendId);
     }
 }
