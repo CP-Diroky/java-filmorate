@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
@@ -170,6 +171,22 @@ public class UserDbStorage implements UserStorage {
                 """;
 
         return jdbcTemplate.query(sql, this::mapRowToUser, id, otherId);
+    }
+
+    @Override
+    @Transactional
+    public void deleteUser(Long userId) {
+        getUserById(userId);
+
+        String deleteUserOnFriends = "DELETE FROM friends WHERE user_id = ?";
+        String deleteFriendsUser = "DELETE FROM friends WHERE friend_id = ?";
+        String deleteFromFilmLikes = "DELETE FROM film_likes WHERE user_id = ? ";
+        String deleteUser =  "DELETE FROM users WHERE id = ?";
+
+        jdbcTemplate.update(deleteUserOnFriends, userId);
+        jdbcTemplate.update(deleteFriendsUser, userId);
+        jdbcTemplate.update(deleteFromFilmLikes, userId);
+        jdbcTemplate.update(deleteUser, userId);
     }
 
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {

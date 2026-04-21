@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 
+import jakarta.validation.constraints.Positive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,8 +9,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.storage.EventStorage;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
@@ -19,11 +22,14 @@ import java.util.Collection;
 public class UserService {
     private final UserStorage userStorage;
     private final Logger log = LoggerFactory.getLogger(UserService.class);
+    private final FilmStorage filmStorage;
     private final EventStorage eventStorage;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
+    public UserService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
+                       @Qualifier("userDbStorage") UserStorage userStorage,
                        @Qualifier("eventDbStorage") EventStorage eventStorage) {
+        this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.eventStorage = eventStorage;
     }
@@ -66,6 +72,16 @@ public class UserService {
 
     public Collection<User> getCommonFriends(Long id, Long otherId) {
         return userStorage.getCommonFriends(id, otherId);
+    }
+
+    public void deleteUserById(@Positive Long userId) {
+        userStorage.deleteUser(userId);
+    }
+
+    public Collection<Film> getRecommendation(Long userId) {
+        getUserById(userId); //Проверяем наличие пользователя
+        if (userStorage.getAllUsers().size() < 2) throw new ConditionsNotMetException("Мало пользователей!");
+        return filmStorage.getRecommendation(userId);
     }
 
     public Collection<Event> getFeed(Long id) {

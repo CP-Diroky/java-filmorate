@@ -24,5 +24,6 @@ public class Film {
     private Integer duration;
     private Set<Long> usersId = new HashSet<>(); //Множество id пользователей которые поставили лайк фильму
     private Set<Genre> genres = new HashSet<>(); //Множество жанров
+    private Set<Director> directors = new HashSet<>(); //Множество режиссёров
     private Mpa mpa; //рейтинг фильма
 }

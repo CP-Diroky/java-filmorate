@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.jdbc.JdbcTest;
 import org.springframework.context.annotation.Import;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -17,8 +18,10 @@ import ru.yandex.practicum.filmorate.storage.UserDbStorage;
 
 import java.time.LocalDate;
 import java.util.Collection;
+import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 @JdbcTest
 @AutoConfigureTestDatabase
@@ -257,10 +260,10 @@ class FilmorateApplicationTests {
         filmStorage.addLike(film1.getId(), user2.getId());
         filmStorage.addLike(film2.getId(), user1.getId());
 
-        Collection<Film> popularFilms = filmStorage.getPopularFilms(10);
+        List<Film> popularFilms = filmStorage.getPopularFilms(10, null, null);
 
-        Film firstFilm = popularFilms.iterator().next();
-        assertThat(firstFilm.getId()).isEqualTo(film1.getId());
+        assertThat(popularFilms).isNotEmpty();
+        assertThat(popularFilms.get(0).getId()).isEqualTo(film1.getId());
     }
 
     private Film createFilm(String name) {
@@ -316,5 +319,40 @@ class FilmorateApplicationTests {
         assertThat(mpa.getName()).isEqualTo("G");
     }
 
+    @Test
+    void shouldDeleteFilmById() {
+        Film film = new Film();
+        film.setName("Film");
+        film.setDescription("Description");
+        film.setReleaseDate(LocalDate.of(2000, 1, 1));
+        film.setDuration(120);
+
+        Mpa mpa = new Mpa();
+        mpa.setId(1L);
+        film.setMpa(mpa);
+
+        filmStorage.addFilm(film);
+
+        Long id = film.getId();
+        filmStorage.deleteFilmById(id);
+
+        assertThatThrownBy(() -> filmStorage.getFilmById(id)).isInstanceOf(NotFoundException.class);
+    }
+
+    @Test
+    void shouldDeleteUserById() {
+        User user = new User();
+        user.setEmail("yaroslavanferov@yandx.ru");
+        user.setLogin("yaroslavanferov");
+        user.setName("yaroslv");
+        user.setBirthday(LocalDate.of(2000, 1, 1));
+
+        userStorage.addUser(user);
+        Long id = user.getId();
+
+        userStorage.deleteUser(id);
+
+        assertThatThrownBy(() -> userStorage.getUserById(id)).isInstanceOf(NotFoundException.class);
+    }
 
 }
