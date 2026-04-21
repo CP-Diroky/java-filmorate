@@ -4,6 +4,7 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Film;
@@ -69,6 +70,12 @@ public class UserController {
     @GetMapping("/{id}/recommendations")
     public Collection<Film> getRecommendation(@PathVariable @Positive Long id) {
         return userService.getRecommendation(id);
+    }
+
+    @DeleteMapping("/{userId}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void deleteUser(@PathVariable @Positive Long userId) {
+        userService.deleteUserById(userId);
     }
 
 }

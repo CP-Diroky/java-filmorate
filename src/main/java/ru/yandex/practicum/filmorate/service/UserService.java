@@ -1,6 +1,7 @@
 package ru.yandex.practicum.filmorate.service;
 
 
+import jakarta.validation.constraints.Positive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -64,6 +65,10 @@ public class UserService {
 
     public Collection<User> getCommonFriends(Long id, Long otherId) {
         return userStorage.getCommonFriends(id, otherId);
+    }
+
+    public void deleteUserById(@Positive Long userId) {
+        userStorage.deleteUser(userId);
     }
 
     public Collection<Film> getRecommendation(Long userId) {
