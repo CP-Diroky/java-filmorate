@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
@@ -18,10 +19,13 @@ import java.util.Collection;
 public class UserService {
     private final UserStorage userStorage;
     private final Logger log = LoggerFactory.getLogger(UserService.class);
+    private final EventStorage eventStorage;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+    public UserService(@Qualifier("userDbStorage") UserStorage userStorage,
+                       @Qualifier("eventDbStorage") EventStorage eventStorage) {
         this.userStorage = userStorage;
+        this.eventStorage = eventStorage;
     }
 
     public Collection<User> getAllUsers() {
@@ -45,11 +49,13 @@ public class UserService {
             throw new ConditionsNotMetException("Нельзя добавить себя в друзья");
         }
         log.info("Друг добавлен");
+        eventStorage.addEvent(id, friendId, Event.EventType.FRIEND, Event.Operation.ADD);
         return userStorage.addFriend(id, friendId);
     }
 
     public User deleteFriend(Long id, Long friendId) {
         log.info("Пользователь {} удален из списка друзей", friendId);
+        eventStorage.addEvent(id, friendId, Event.EventType.FRIEND, Event.Operation.REMOVE);
         return userStorage.deleteFriend(id, friendId);
     }
 
@@ -63,6 +69,6 @@ public class UserService {
     }
 
     public Collection<Event> getFeed(Long id) {
-        return userStorage.getFeed(id);
+        return eventStorage.getFeed(id);
     }
 }

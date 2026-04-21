@@ -9,7 +9,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
@@ -27,11 +26,10 @@ public class UserDbStorage implements UserStorage {
 
     private final JdbcTemplate jdbcTemplate;
     private static final Logger log = LoggerFactory.getLogger(UserDbStorage.class);
-    private final EventDbStorage eventDbStorage;
 
-    public UserDbStorage(JdbcTemplate jdbcTemplate, EventDbStorage eventDbStorage) {
+
+    public UserDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.eventDbStorage = eventDbStorage;
     }
 
     @Override
@@ -128,7 +126,6 @@ public class UserDbStorage implements UserStorage {
 
         String sql = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, id, friendId);
-        eventDbStorage.addEvent(sql, id, friendId, Event.EventType.FRIEND);
         return getUserById(id);
     }
 
@@ -140,7 +137,6 @@ public class UserDbStorage implements UserStorage {
 
         String sql = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
         jdbcTemplate.update(sql, id, friendId);
-        eventDbStorage.addEvent(sql, id, friendId, Event.EventType.FRIEND);
         return getUserById(id);
     }
 
@@ -176,20 +172,6 @@ public class UserDbStorage implements UserStorage {
         return jdbcTemplate.query(sql, this::mapRowToUser, id, otherId);
     }
 
-    @Override
-    public Collection<Event> getFeed(Long id) {
-        getUserById(id);
-
-        String sql = """
-                SELECT e.*
-                FROM events e
-                JOIN friends f ON e.user_id = f.friend_id
-                WHERE f.user_id = ?
-                """;
-        return jdbcTemplate.query(sql, this::mapRowToEvent, id);
-
-    }
-
     private User mapRowToUser(ResultSet rs, int rowNum) throws SQLException {
         User user = new User();
         user.setId(rs.getLong("id"));
@@ -203,17 +185,6 @@ public class UserDbStorage implements UserStorage {
         }
 
         return user;
-    }
-
-    private Event mapRowToEvent(ResultSet rs, int rownum) throws SQLException {
-        Event event = new Event();
-        event.setId(rs.getLong("id"));
-        event.setUser_id(rs.getLong("user_id"));
-        event.setTimestamp(rs.getLong("timestamp"));
-        event.setEventType(Event.EventType.valueOf(rs.getString("event_type")));
-        event.setOperation(Event.Operation.valueOf(rs.getString("operation")));
-        event.setEntityId(rs.getLong("entity_id"));
-        return event;
     }
 
     private Set<Long> getFriendsIds(Long userId) {

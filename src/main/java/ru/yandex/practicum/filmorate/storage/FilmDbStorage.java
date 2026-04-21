@@ -9,7 +9,6 @@ import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -31,11 +30,9 @@ public class FilmDbStorage implements FilmStorage {
 
     private final JdbcTemplate jdbcTemplate;
     private static final Logger log = LoggerFactory.getLogger(FilmDbStorage.class);
-    private final EventDbStorage eventDbStorage;
 
-    public FilmDbStorage(JdbcTemplate jdbcTemplate, EventDbStorage eventDbStorage) {
+    public FilmDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
-        this.eventDbStorage = eventDbStorage;
     }
 
     @Override
@@ -141,7 +138,6 @@ public class FilmDbStorage implements FilmStorage {
     public Film addLike(Long filmId, Long userId) {
         String sql = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
-        eventDbStorage.addEvent(sql, userId, filmId, Event.EventType.LIKE);
         return getFilmById(filmId);
     }
 
@@ -149,7 +145,6 @@ public class FilmDbStorage implements FilmStorage {
     public Film deleteLike(Long filmId, Long userId) {
         String sql = "DELETE FROM film_likes WHERE film_id = ? AND user_id = ?";
         jdbcTemplate.update(sql, filmId, userId);
-        eventDbStorage.addEvent(sql, userId, filmId, Event.EventType.LIKE);
         return getFilmById(filmId);
     }
 
