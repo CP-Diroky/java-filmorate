@@ -35,6 +35,10 @@ public class FilmController {
         return filmService.getFilmById(id);
     }
 
+    @GetMapping("/director/{directorId}")
+    public Collection<Film> getDirectorsFilms(@PathVariable Long directorId, @RequestParam String sortBy) {
+        return filmService.getDirectorsFilms(directorId, sortBy);
+    }
 
     @PostMapping
     public Film addFilm(@RequestBody @Valid Film film) {
@@ -69,4 +73,10 @@ public class FilmController {
                                      @RequestParam @Positive Long friendId) {
         return filmService.getCommonFilms(userId, friendId);
     }
+
+    @GetMapping("/search")
+    public Collection<Film> getPopularFilms(@RequestParam String query, @RequestParam String by) {
+        return filmService.getSearchedFilms(query, by);
+    }
+
 }

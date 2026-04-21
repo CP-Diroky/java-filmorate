@@ -1,17 +1,21 @@
 package ru.yandex.practicum.filmorate.service;
 
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+@Slf4j
 @Service
 public class FilmService {
     private final FilmStorage filmStorage;
@@ -64,6 +68,28 @@ public class FilmService {
             genreStorage.getGenreById(genreId);
         }
         return filmStorage.getPopularFilms(count, genreId, year);
+    }
+
+    public Collection<Film> getDirectorsFilms(Long directorId, String sortType) {
+        return switch (sortType) {
+            case "year" -> filmStorage.getSortDirectorsFilmsByYear(directorId);
+            case "likes" -> filmStorage.getSortDirectorsFilmsByLikes(directorId);
+            default -> throw new NotFoundException("Тип сортировки не найден");
+        };
+    }
+
+    public Collection<Film> getSearchedFilms(String query, String searchByTypes) {
+        Collection<Film> films = new ArrayList<>();
+
+        for (String searchByType : searchByTypes.split(",")) {
+            switch (searchByType) {
+                case "director" -> films.addAll(filmStorage.getSearchedFilmsByDirector(query));
+                case "title" -> films.addAll(filmStorage.getSearchedFilmsByTitle(query));
+                default -> throw new NotFoundException("Тип поиска не найден");
+            }
+        }
+
+        return films;
     }
 
     public List<Film> getCommonFilms(Long userId, Long friendId) {
