@@ -67,6 +67,7 @@ public class UserService {
     }
 
     public Collection<Film> getRecommendation(Long userId) {
+        getUserById(userId); //Проверяем наличие пользователя
         if (userStorage.getAllUsers().size() < 2) throw new ConditionsNotMetException("Мало пользователей!");
         return filmStorage.getRecommendation(userId);
     }
