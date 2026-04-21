@@ -251,6 +251,43 @@ public class FilmDbStorage implements FilmStorage {
 
     }
 
+    //Метод для получения рекомендаций
+    @Override
+    public Collection<Film> getRecommendation(Long userId) {
+        //Проверяем есть ли записи в таблице film_likes
+        String sql = "SELECT film_id FROM film_likes";
+        List<Long> filmsIds = jdbcTemplate.queryForList(sql, Long.class);
+
+        if (filmsIds.isEmpty()) throw new ConditionsNotMetException("Лайков нет!");
+
+        sql = """
+                    SELECT fl2.film_id
+                    FROM film_likes fl2
+                    WHERE fl2.user_id = (
+                        SELECT fl_other.user_id
+                        FROM film_likes fl_user
+                        JOIN film_likes fl_other
+                            ON fl_user.film_id = fl_other.film_id
+                        WHERE fl_user.user_id = ?
+                          AND fl_other.user_id <> ?
+                        GROUP BY fl_other.user_id
+                        ORDER BY COUNT(*) DESC
+                        LIMIT 1
+                    )
+                    AND fl2.film_id NOT IN (
+                        SELECT film_id FROM film_likes WHERE user_id = ?
+                    )
+                """;
+
+        filmsIds = jdbcTemplate.queryForList(sql, Long.class, userId, userId, userId);
+
+        return filmsIds.stream()
+                .map(this::getFilmById)
+                .toList();
+
+
+    }
+
     private Film mapRowToFilm(ResultSet rs, int rowNum) throws SQLException {
         Film film = new Film();
         film.setId(rs.getLong("id"));

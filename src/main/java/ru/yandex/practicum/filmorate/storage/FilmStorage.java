@@ -33,4 +33,6 @@ public interface FilmStorage {
 
     void deleteFilmById(Long id);
 
+    Collection<Film> getRecommendation(Long userId);
+
 }

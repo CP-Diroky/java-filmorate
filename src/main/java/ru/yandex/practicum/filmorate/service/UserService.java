@@ -8,7 +8,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
@@ -18,9 +20,12 @@ import java.util.Collection;
 public class UserService {
     private final UserStorage userStorage;
     private final Logger log = LoggerFactory.getLogger(UserService.class);
+    private final FilmStorage filmStorage;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+    public UserService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
+                       @Qualifier("userDbStorage") UserStorage userStorage) {
+        this.filmStorage = filmStorage;
         this.userStorage = userStorage;
     }
 
@@ -64,5 +69,11 @@ public class UserService {
 
     public void deleteUserById(@Positive Long userId) {
         userStorage.deleteUser(userId);
+    }
+
+    public Collection<Film> getRecommendation(Long userId) {
+        getUserById(userId); //Проверяем наличие пользователя
+        if (userStorage.getAllUsers().size() < 2) throw new ConditionsNotMetException("Мало пользователей!");
+        return filmStorage.getRecommendation(userId);
     }
 }
