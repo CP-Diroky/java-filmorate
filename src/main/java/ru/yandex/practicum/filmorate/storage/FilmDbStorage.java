@@ -19,10 +19,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Repository
@@ -161,16 +158,28 @@ public class FilmDbStorage implements FilmStorage {
     }
 
     @Override
-    public Collection<Film> getPopularFilms(int count) {
+    public List<Film> getPopularFilms(int count, Long genreId, Integer year) {
         String sql = """
-                SELECT f.*
-                FROM films f
-                LEFT JOIN film_likes fl ON f.id = fl.film_id
-                GROUP BY f.id
-                ORDER BY COUNT(fl.user_id) DESC
-                LIMIT ?
+                        SELECT f.*
+                        FROM films f
+                        LEFT JOIN film_likes fl ON f.id = fl.film_id
+                WHERE 1=1
+                """
+                + (genreId != null ? " AND EXISTS (SELECT 1 FROM film_genres fg " +
+                "WHERE fg.film_id = f.id AND fg.genre_id = ?) " : "")
+                + (year != null ? " AND YEAR(f.release_date) = ? " : "")
+                + """
+                        GROUP BY f.id
+                        ORDER BY COUNT(fl.user_id) DESC
+                        LIMIT ?
                 """;
-        return jdbcTemplate.query(sql, this::mapRowToFilm, count);
+
+        List<Object> params = new ArrayList<>();
+        if (genreId != null) params.add(genreId);
+        if (year != null) params.add(year);
+        params.add(count);
+
+        return jdbcTemplate.query(sql, this::mapRowToFilm, params.toArray());
     }
 
     @Override
@@ -378,6 +387,30 @@ public class FilmDbStorage implements FilmStorage {
                     ps.setLong(1, filmId);
                     ps.setLong(2, genre.getId());
                 });
+    }
+
+    @Override
+    public List<Film> getCommonFilms(Long userId, Long friendId) {
+        String sql = """
+        SELECT f.*
+        FROM films f
+        WHERE f.id IN (
+            SELECT fl1.film_id
+            FROM film_likes fl1
+            WHERE fl1.user_id = ?
+            INTERSECT
+            SELECT fl2.film_id
+            FROM film_likes fl2
+            WHERE fl2.user_id = ?
+        )
+        ORDER BY (
+            SELECT COUNT(*)
+            FROM film_likes fl
+            WHERE fl.film_id = f.id
+        ) DESC
+        """;
+
+        return jdbcTemplate.query(sql, this::mapRowToFilm, userId, friendId);
     }
 
     private void saveFilmDirectors(Long filmId, Set<Director> directors) {
