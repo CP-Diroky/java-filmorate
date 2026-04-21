@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.controller;
 
+
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,6 +11,7 @@ import ru.yandex.practicum.filmorate.service.FilmService;
 
 import java.util.Collection;
 import java.util.List;
+
 
 @RestController
 @Validated
@@ -33,6 +35,7 @@ public class FilmController {
         return filmService.getFilmById(id);
     }
 
+
     @PostMapping
     public Film addFilm(@RequestBody @Valid Film film) {
         return filmService.addFilm(film);
@@ -54,8 +57,11 @@ public class FilmController {
     }
 
     @GetMapping("/popular")
-    public Collection<Film> getPopularFilms(@RequestParam(defaultValue = "10") int count) {
-        return filmService.getPopularFilms(count);
+    public List<Film> getPopularFilms(
+            @RequestParam(defaultValue = "10") int count,
+            @RequestParam(required = false) Long genreId,
+            @RequestParam(required = false) Integer year) {
+        return filmService.getPopularFilms(count, genreId, year);
     }
 
     @GetMapping("/common")
