@@ -31,4 +31,6 @@ public interface FilmStorage {
 
     Collection<Film> getSearchedFilmsByTitle(String query);
 
+    void deleteFilmById(Long id);
+
 }
