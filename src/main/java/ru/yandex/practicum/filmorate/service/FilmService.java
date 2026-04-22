@@ -14,9 +14,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -89,17 +87,21 @@ public class FilmService {
     }
 
     public Collection<Film> getSearchedFilms(String query, String searchByTypes) {
-        Collection<Film> films = new ArrayList<>();
+        Map<Long, Film> filmsMap = new HashMap<>();
 
         for (String searchByType : searchByTypes.split(",")) {
             switch (searchByType) {
-                case "director" -> films.addAll(filmStorage.getSearchedFilmsByDirector(query));
-                case "title" -> films.addAll(filmStorage.getSearchedFilmsByTitle(query));
+                case "director" -> filmStorage.getSearchedFilmsByDirector(query)
+                        .forEach(film -> filmsMap.put(film.getId(), film));
+                case "title" -> filmStorage.getSearchedFilmsByTitle(query)
+                        .forEach(film -> filmsMap.put(film.getId(), film));
                 default -> throw new NotFoundException("Тип поиска не найден");
             }
         }
 
-        return films;
+        return filmsMap.values().stream()
+                .sorted(Comparator.comparingInt((Film film) -> film.getUsersId().size()).reversed())
+                .toList();
     }
 
     public List<Film> getCommonFilms(Long userId, Long friendId) {

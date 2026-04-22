@@ -16,6 +16,7 @@ import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
+import java.util.List;
 
 
 @Service
@@ -81,12 +82,15 @@ public class UserService {
     }
 
     public Collection<Film> getRecommendation(Long userId) {
-        getUserById(userId); //Проверяем наличие пользователя
-        if (userStorage.getAllUsers().size() < 2) throw new ConditionsNotMetException("Мало пользователей!");
+        getUserById(userId);
+        if (userStorage.getAllUsers().size() < 2) {
+            return List.of();
+        }
         return filmStorage.getRecommendation(userId);
     }
 
     public Collection<Event> getFeed(Long id) {
+        userStorage.getUserById(id);
         return eventStorage.getFeed(id);
     }
 }

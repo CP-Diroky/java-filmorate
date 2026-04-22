@@ -33,10 +33,11 @@ public class EventDbStorage implements EventStorage {
     public Collection<Event> getFeed(Long id) {
 
         String sql = """
-                SELECT *
-                FROM events
-                WHERE user_id = ?
-                """;
+            SELECT *
+            FROM events
+            WHERE user_id = ?
+            ORDER BY event_id
+            """;
 
         return jdbcTemplate.query(sql, this::mapRowToEvent, id);
     }
