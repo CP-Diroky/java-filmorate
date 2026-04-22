@@ -38,23 +38,22 @@ public class ReviewService {
         }
         userStorage.getUserById(id);
         filmStorage.getFilmById(review.getFilmId());
-        Review reviewWithId = reviewStorage.addReview(review);
-        eventStorage.addEvent(reviewWithId.getUserId(), reviewWithId.getReviewId(), Event.EventType.REVIEW,
-                Event.Operation.ADD);
-        return reviewWithId;
+        Review saved = reviewStorage.addReview(review);
+        eventStorage.addEvent(saved.getUserId(), saved.getReviewId(), Event.EventType.REVIEW, Event.Operation.ADD);
+        return saved;
     }
-
 
     public Review updateReview(Review review) {
         allValidateReviewUserFilm(review.getReviewId(), review.getUserId(), review.getFilmId());
-        eventStorage.addEvent(review.getUserId(), review.getReviewId(), Event.EventType.REVIEW, Event.Operation.UPDATE);
-        return reviewStorage.updateReview(review);
+        Review updated = reviewStorage.updateReview(review);
+        eventStorage.addEvent(updated.getUserId(), updated.getReviewId(), Event.EventType.REVIEW, Event.Operation.UPDATE);
+        return updated;
     }
 
     public void deleteReviewById(Long id) {
-        Review reviewToDelete = getReviewById(id);
-        eventStorage.addEvent(reviewToDelete.getUserId(), id, Event.EventType.REVIEW, Event.Operation.REMOVE);
+        Review review = getReviewById(id);
         reviewStorage.deleteReview(id);
+        eventStorage.addEvent(review.getUserId(), id, Event.EventType.REVIEW, Event.Operation.REMOVE);
     }
 
     public Review getReviewById(Long id) {

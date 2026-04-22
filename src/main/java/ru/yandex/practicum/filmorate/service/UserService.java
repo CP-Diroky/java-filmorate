@@ -54,19 +54,17 @@ public class UserService {
         if (id.equals(friendId)) {
             throw new ConditionsNotMetException("Нельзя добавить себя в друзья");
         }
-        getUserById(id); //Проверяем наличие пользователей
-        getUserById(friendId);
         log.info("Друг добавлен");
+        User user = userStorage.addFriend(id, friendId);
         eventStorage.addEvent(id, friendId, Event.EventType.FRIEND, Event.Operation.ADD);
-        return userStorage.addFriend(id, friendId);
+        return user;
     }
 
     public User deleteFriend(Long id, Long friendId) {
-        getUserById(id); //Проверяем наличие пользователей
-        getUserById(friendId);
         log.info("Пользователь {} удален из списка друзей", friendId);
+        User user = userStorage.deleteFriend(id, friendId);
         eventStorage.addEvent(id, friendId, Event.EventType.FRIEND, Event.Operation.REMOVE);
-        return userStorage.deleteFriend(id, friendId);
+        return user;
     }
 
     public Collection<User> getAllFriends(Long id) {

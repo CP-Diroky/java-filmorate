@@ -56,15 +56,17 @@ public class FilmService {
     public Film addLike(Long id, Long userId) {
         userStorage.getUserById(userId);
         filmStorage.getFilmById(id);
+        Film film = filmStorage.addLike(id, userId);
         eventStorage.addEvent(userId, id, Event.EventType.LIKE, Event.Operation.ADD);
-        return filmStorage.addLike(id, userId);
+        return film;
     }
 
     public Film deleteLike(Long id, Long userId) {
         userStorage.getUserById(userId);
         filmStorage.getFilmById(id);
+        Film film = filmStorage.deleteLike(id, userId);
         eventStorage.addEvent(userId, id, Event.EventType.LIKE, Event.Operation.REMOVE);
-        return filmStorage.deleteLike(id, userId);
+        return film;
     }
 
 
