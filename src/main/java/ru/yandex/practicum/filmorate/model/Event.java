@@ -4,12 +4,12 @@ import lombok.Data;
 
 @Data
 public class Event {
-    Long id;
-    Long user_id;
-    Long timestamp;
-    EventType eventType;
-    Operation operation;
-    Long entityId;
+    private Long eventId;
+    private Long userId;
+    private Long timestamp;
+    private EventType eventType;
+    private Operation operation;
+    private Long entityId;
 
     public enum EventType {
         LIKE, REVIEW, FRIEND

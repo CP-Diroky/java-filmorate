@@ -85,7 +85,7 @@ CREATE TABLE IF NOT EXISTS review_likes (
 
 
 CREATE TABLE IF NOT EXISTS events (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    event_id BIGINT AUTO_INCREMENT PRIMARY KEY,
     user_id BIGINT REFERENCES users (id),
     timestamp BIGINT NOT NULL,
     event_type varchar NOT NULL CHECK (event_type IN ('LIKE', 'REVIEW', 'FRIEND')),

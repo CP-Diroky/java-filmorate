@@ -28,7 +28,7 @@ public class UserService {
     @Autowired
     public UserService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
                        @Qualifier("userDbStorage") UserStorage userStorage,
-                       @Qualifier("eventDbStorage") EventStorage eventStorage) {
+                       EventStorage eventStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.eventStorage = eventStorage;
@@ -54,12 +54,16 @@ public class UserService {
         if (id.equals(friendId)) {
             throw new ConditionsNotMetException("Нельзя добавить себя в друзья");
         }
+        getUserById(id); //Проверяем наличие пользователей
+        getUserById(friendId);
         log.info("Друг добавлен");
         eventStorage.addEvent(id, friendId, Event.EventType.FRIEND, Event.Operation.ADD);
         return userStorage.addFriend(id, friendId);
     }
 
     public User deleteFriend(Long id, Long friendId) {
+        getUserById(id); //Проверяем наличие пользователей
+        getUserById(friendId);
         log.info("Пользователь {} удален из списка друзей", friendId);
         eventStorage.addEvent(id, friendId, Event.EventType.FRIEND, Event.Operation.REMOVE);
         return userStorage.deleteFriend(id, friendId);

@@ -1,6 +1,5 @@
 package ru.yandex.practicum.filmorate.storage;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.model.Event;
@@ -11,7 +10,6 @@ import java.time.Instant;
 import java.util.Collection;
 
 @Repository
-@Qualifier("eventDbStorage")
 public class EventDbStorage implements EventStorage {
 
     private final JdbcTemplate jdbcTemplate;
@@ -35,19 +33,18 @@ public class EventDbStorage implements EventStorage {
     public Collection<Event> getFeed(Long id) {
 
         String sql = """
-                SELECT e.*
-                FROM events e
-                JOIN friends f ON e.user_id = f.friend_id
-                WHERE f.user_id = ?
+                SELECT *
+                FROM events
+                WHERE user_id = ?
                 """;
-        return jdbcTemplate.query(sql, this::mapRowToEvent, id);
 
+        return jdbcTemplate.query(sql, this::mapRowToEvent, id);
     }
 
     private Event mapRowToEvent(ResultSet rs, int rownum) throws SQLException {
         Event event = new Event();
-        event.setId(rs.getLong("id"));
-        event.setUser_id(rs.getLong("user_id"));
+        event.setEventId(rs.getLong("event_id"));
+        event.setUserId(rs.getLong("user_id"));
         event.setTimestamp(rs.getLong("timestamp"));
         event.setEventType(Event.EventType.valueOf(rs.getString("event_type")));
         event.setOperation(Event.Operation.valueOf(rs.getString("operation")));
