@@ -4,7 +4,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Review;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.ReviewStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
@@ -16,14 +18,17 @@ public class ReviewService {
     private final ReviewStorage reviewStorage;
     private final UserStorage userStorage;
     private final FilmStorage filmStorage;
+    private final EventStorage eventStorage;
 
     @Autowired
     public ReviewService(ReviewStorage reviewStorage,
                          @Qualifier("userDbStorage") UserStorage userStorage,
-                         @Qualifier("filmDbStorage") FilmStorage filmStorage) {
+                         @Qualifier("filmDbStorage") FilmStorage filmStorage,
+                         EventStorage eventStorage) {
         this.reviewStorage = reviewStorage;
         this.userStorage = userStorage;
         this.filmStorage = filmStorage;
+        this.eventStorage = eventStorage;
     }
 
     public Review newAddReview(Review review) {
@@ -33,18 +38,22 @@ public class ReviewService {
         }
         userStorage.getUserById(id);
         filmStorage.getFilmById(review.getFilmId());
-        return reviewStorage.addReview(review);
+        Review saved = reviewStorage.addReview(review);
+        eventStorage.addEvent(saved.getUserId(), saved.getReviewId(), Event.EventType.REVIEW, Event.Operation.ADD);
+        return saved;
     }
-
 
     public Review updateReview(Review review) {
         allValidateReviewUserFilm(review.getReviewId(), review.getUserId(), review.getFilmId());
-        return reviewStorage.updateReview(review);
+        Review updated = reviewStorage.updateReview(review);
+        eventStorage.addEvent(updated.getUserId(), updated.getReviewId(), Event.EventType.REVIEW, Event.Operation.UPDATE);
+        return updated;
     }
 
     public void deleteReviewById(Long id) {
-        getReviewById(id);
+        Review review = getReviewById(id);
         reviewStorage.deleteReview(id);
+        eventStorage.addEvent(review.getUserId(), id, Event.EventType.REVIEW, Event.Operation.REMOVE);
     }
 
     public Review getReviewById(Long id) {

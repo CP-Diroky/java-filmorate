@@ -92,7 +92,7 @@ public class FilmDbStorage implements FilmStorage {
         //Добавляем режиссёров
         saveFilmDirectors(film.getId(), film.getDirectors());
 
-        return film;
+        return getFilmById(film.getId());
     }
 
     @Override
@@ -141,12 +141,12 @@ public class FilmDbStorage implements FilmStorage {
         // добавить новых
         saveFilmDirectors(film.getId(), film.getDirectors());
 
-        return film;
+        return getFilmById(film.getId());
     }
 
     @Override
     public Film addLike(Long filmId, Long userId) {
-        String sql = "INSERT INTO film_likes (film_id, user_id) VALUES (?, ?)";
+        String sql = "MERGE INTO film_likes (film_id, user_id) KEY (film_id, user_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, filmId, userId);
         return getFilmById(filmId);
     }
@@ -258,7 +258,9 @@ public class FilmDbStorage implements FilmStorage {
         String sql = "SELECT film_id FROM film_likes";
         List<Long> filmsIds = jdbcTemplate.queryForList(sql, Long.class);
 
-        if (filmsIds.isEmpty()) throw new ConditionsNotMetException("Лайков нет!");
+        if (filmsIds.isEmpty()) {
+            return List.of();
+        }
 
         sql = """
                     SELECT fl2.film_id
@@ -320,13 +322,14 @@ public class FilmDbStorage implements FilmStorage {
 
     private Set<Genre> getGenres(Long filmId) {
         String sql = """
-                    SELECT g.*
-                    FROM genres g
-                    JOIN film_genres fg ON g.id = fg.genre_id
-                    WHERE fg.film_id = ?
-                """;
+                SELECT g.*
+                FROM genres g
+                JOIN film_genres fg ON g.id = fg.genre_id
+                WHERE fg.film_id = ?
+                ORDER BY g.id
+            """;
 
-        return new HashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> {
+        return new LinkedHashSet<>(jdbcTemplate.query(sql, (rs, rowNum) -> {
             Genre genre = new Genre();
             genre.setId(rs.getLong("id"));
             genre.setName(rs.getString("name"));

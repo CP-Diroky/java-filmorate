@@ -28,6 +28,7 @@ public class UserDbStorage implements UserStorage {
     private final JdbcTemplate jdbcTemplate;
     private static final Logger log = LoggerFactory.getLogger(UserDbStorage.class);
 
+
     public UserDbStorage(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
     }
@@ -126,7 +127,6 @@ public class UserDbStorage implements UserStorage {
 
         String sql = "INSERT INTO friends (user_id, friend_id) VALUES (?, ?)";
         jdbcTemplate.update(sql, id, friendId);
-
         return getUserById(id);
     }
 
@@ -138,7 +138,6 @@ public class UserDbStorage implements UserStorage {
 
         String sql = "DELETE FROM friends WHERE user_id = ? AND friend_id = ?";
         jdbcTemplate.update(sql, id, friendId);
-
         return getUserById(id);
     }
 
@@ -181,12 +180,23 @@ public class UserDbStorage implements UserStorage {
 
         String deleteUserOnFriends = "DELETE FROM friends WHERE user_id = ?";
         String deleteFriendsUser = "DELETE FROM friends WHERE friend_id = ?";
-        String deleteFromFilmLikes = "DELETE FROM film_likes WHERE user_id = ? ";
-        String deleteUser =  "DELETE FROM users WHERE id = ?";
+        String deleteFromFilmLikes = "DELETE FROM film_likes WHERE user_id = ?";
+        String deleteFromEvents = "DELETE FROM events WHERE user_id = ?";
+        String deleteFromReviewLikesByUser = "DELETE FROM review_likes WHERE user_id = ?";
+        String deleteFromReviewLikesByReviews = """
+            DELETE FROM review_likes
+            WHERE review_id IN (SELECT id FROM reviews WHERE user_id = ?)
+            """;
+        String deleteFromReviews = "DELETE FROM reviews WHERE user_id = ?";
+        String deleteUser = "DELETE FROM users WHERE id = ?";
 
         jdbcTemplate.update(deleteUserOnFriends, userId);
         jdbcTemplate.update(deleteFriendsUser, userId);
         jdbcTemplate.update(deleteFromFilmLikes, userId);
+        jdbcTemplate.update(deleteFromEvents, userId);
+        jdbcTemplate.update(deleteFromReviewLikesByUser, userId);
+        jdbcTemplate.update(deleteFromReviewLikesByReviews, userId);
+        jdbcTemplate.update(deleteFromReviews, userId);
         jdbcTemplate.update(deleteUser, userId);
     }
 

@@ -7,14 +7,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
+import ru.yandex.practicum.filmorate.model.Event;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
 import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.GenreStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Service
@@ -22,14 +22,17 @@ public class FilmService {
     private final FilmStorage filmStorage;
     private final UserStorage userStorage;
     private final GenreStorage genreStorage;
+    private final EventStorage eventStorage;
 
     @Autowired
     public FilmService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
                        @Qualifier("userDbStorage") UserStorage userStorage,
-                       @Qualifier("genreDbStorage") GenreStorage genreStorage) {
+                       @Qualifier("genreDbStorage") GenreStorage genreStorage,
+                       EventStorage eventStorage) {
         this.filmStorage = filmStorage;
         this.userStorage = userStorage;
         this.genreStorage = genreStorage;
+        this.eventStorage = eventStorage;
     }
 
     public Collection<Film> getAllFilms() {
@@ -51,13 +54,17 @@ public class FilmService {
     public Film addLike(Long id, Long userId) {
         userStorage.getUserById(userId);
         filmStorage.getFilmById(id);
-        return filmStorage.addLike(id, userId);
+        Film film = filmStorage.addLike(id, userId);
+        eventStorage.addEvent(userId, id, Event.EventType.LIKE, Event.Operation.ADD);
+        return film;
     }
 
     public Film deleteLike(Long id, Long userId) {
         userStorage.getUserById(userId);
         filmStorage.getFilmById(id);
-        return filmStorage.deleteLike(id, userId);
+        Film film = filmStorage.deleteLike(id, userId);
+        eventStorage.addEvent(userId, id, Event.EventType.LIKE, Event.Operation.REMOVE);
+        return film;
     }
 
 
@@ -80,17 +87,21 @@ public class FilmService {
     }
 
     public Collection<Film> getSearchedFilms(String query, String searchByTypes) {
-        Collection<Film> films = new ArrayList<>();
+        Map<Long, Film> filmsMap = new HashMap<>();
 
         for (String searchByType : searchByTypes.split(",")) {
             switch (searchByType) {
-                case "director" -> films.addAll(filmStorage.getSearchedFilmsByDirector(query));
-                case "title" -> films.addAll(filmStorage.getSearchedFilmsByTitle(query));
+                case "director" -> filmStorage.getSearchedFilmsByDirector(query)
+                        .forEach(film -> filmsMap.put(film.getId(), film));
+                case "title" -> filmStorage.getSearchedFilmsByTitle(query)
+                        .forEach(film -> filmsMap.put(film.getId(), film));
                 default -> throw new NotFoundException("Тип поиска не найден");
             }
         }
 
-        return films;
+        return filmsMap.values().stream()
+                .sorted(Comparator.comparingInt((Film film) -> film.getUsersId().size()).reversed())
+                .toList();
     }
 
     public List<Film> getCommonFilms(Long userId, Long friendId) {

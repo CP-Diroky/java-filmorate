@@ -24,7 +24,7 @@ public class ReviewDbStorage implements ReviewStorage {
             "INSERT INTO reviews (content, is_positive, user_id, film_id, useful) VALUES (?, ?, ?, ?, ?)";
 
     private static final String UPDATE_REVIEW =
-            "UPDATE reviews SET content = ?, is_positive = ?, user_id = ?, film_id = ? WHERE id = ?";
+            "UPDATE reviews SET content = ?, is_positive = ? WHERE id = ?";
 
     private static final String DELETE_REVIEW =
             "DELETE FROM reviews WHERE id = ?";
@@ -69,8 +69,6 @@ public class ReviewDbStorage implements ReviewStorage {
         jdbcTemplate.update(UPDATE_REVIEW,
                 review.getContent(),
                 review.getPositive(),
-                review.getUserId(),
-                review.getFilmId(),
                 reviewId);
 
         return getReview(reviewId);

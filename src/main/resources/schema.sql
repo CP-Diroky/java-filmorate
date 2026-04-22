@@ -82,3 +82,13 @@ CREATE TABLE IF NOT EXISTS review_likes (
     FOREIGN KEY (review_id) REFERENCES reviews (id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users (id)
     );
+
+
+CREATE TABLE IF NOT EXISTS events (
+    event_id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT REFERENCES users (id),
+    timestamp BIGINT NOT NULL,
+    event_type varchar NOT NULL CHECK (event_type IN ('LIKE', 'REVIEW', 'FRIEND')),
+    operation varchar NOT NULL CHECK (operation IN ('ADD', 'REMOVE', 'UPDATE')),
+    entity_id BIGINT
+);
