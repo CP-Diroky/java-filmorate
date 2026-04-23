@@ -8,6 +8,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 
@@ -23,6 +24,7 @@ public class Film {
     @Min(1)
     private Integer duration;
     private Set<Long> usersId = new HashSet<>(); //Множество id пользователей которые поставили лайк фильму
-    private Set<Genre> genres = new HashSet<>(); //Множество жанров
+    private Set<Genre> genres = new LinkedHashSet<>(); //Множество жанров
+    private Set<Director> directors = new HashSet<>(); //Множество режиссёров
     private Mpa mpa; //рейтинг фильма
 }
