@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Positive;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.storage.DirectorsStorage;
@@ -10,6 +11,7 @@ import ru.yandex.practicum.filmorate.storage.DirectorsStorage;
 import java.util.Collection;
 
 @RestController
+@Validated
 @RequestMapping("/directors")
 public class DirectorsController {
 

@@ -1,7 +1,6 @@
 package ru.yandex.practicum.filmorate.service;
 
 
-import jakarta.validation.constraints.Positive;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -110,7 +109,7 @@ public class FilmService {
         return filmStorage.getCommonFilms(userId, friendId);
     }
 
-    public void deleteFilmById(@Positive Long filmId) {
+    public void deleteFilmById(Long filmId) {
         getFilmById(filmId);
         filmStorage.deleteFilmById(filmId);
     }
