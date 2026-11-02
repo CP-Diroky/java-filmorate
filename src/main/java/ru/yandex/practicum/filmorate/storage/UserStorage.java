@@ -1,5 +1,6 @@
 package ru.yandex.practicum.filmorate.storage;
 
+import jakarta.validation.constraints.Positive;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.Collection;
@@ -21,4 +22,6 @@ public interface UserStorage {
     Collection<User> getAllFriends(Long id);
 
     Collection<User> getCommonFriends(Long id, Long otherId);
+
+    void deleteUser(@Positive Long userId);
 }

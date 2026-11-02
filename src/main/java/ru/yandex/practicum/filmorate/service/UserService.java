@@ -1,26 +1,38 @@
 package ru.yandex.practicum.filmorate.service;
 
 
+import jakarta.validation.constraints.Positive;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.exception.ConditionsNotMetException;
+import ru.yandex.practicum.filmorate.model.Event;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.EventStorage;
+import ru.yandex.practicum.filmorate.storage.FilmStorage;
 import ru.yandex.practicum.filmorate.storage.UserStorage;
 
 import java.util.Collection;
+import java.util.List;
 
 
 @Service
 public class UserService {
     private final UserStorage userStorage;
     private final Logger log = LoggerFactory.getLogger(UserService.class);
+    private final FilmStorage filmStorage;
+    private final EventStorage eventStorage;
 
     @Autowired
-    public UserService(@Qualifier("userDbStorage") UserStorage userStorage) {
+    public UserService(@Qualifier("filmDbStorage") FilmStorage filmStorage,
+                       @Qualifier("userDbStorage") UserStorage userStorage,
+                       EventStorage eventStorage) {
+        this.filmStorage = filmStorage;
         this.userStorage = userStorage;
+        this.eventStorage = eventStorage;
     }
 
     public Collection<User> getAllUsers() {
@@ -44,12 +56,16 @@ public class UserService {
             throw new ConditionsNotMetException("Нельзя добавить себя в друзья");
         }
         log.info("Друг добавлен");
-        return userStorage.addFriend(id, friendId);
+        User user = userStorage.addFriend(id, friendId);
+        eventStorage.addEvent(id, friendId, Event.EventType.FRIEND, Event.Operation.ADD);
+        return user;
     }
 
     public User deleteFriend(Long id, Long friendId) {
         log.info("Пользователь {} удален из списка друзей", friendId);
-        return userStorage.deleteFriend(id, friendId);
+        User user = userStorage.deleteFriend(id, friendId);
+        eventStorage.addEvent(id, friendId, Event.EventType.FRIEND, Event.Operation.REMOVE);
+        return user;
     }
 
     public Collection<User> getAllFriends(Long id) {
@@ -59,5 +75,22 @@ public class UserService {
 
     public Collection<User> getCommonFriends(Long id, Long otherId) {
         return userStorage.getCommonFriends(id, otherId);
+    }
+
+    public void deleteUserById(@Positive Long userId) {
+        userStorage.deleteUser(userId);
+    }
+
+    public Collection<Film> getRecommendation(Long userId) {
+        getUserById(userId);
+        if (userStorage.getAllUsers().size() < 2) {
+            return List.of();
+        }
+        return filmStorage.getRecommendation(userId);
+    }
+
+    public Collection<Event> getFeed(Long id) {
+        userStorage.getUserById(id);
+        return eventStorage.getFeed(id);
     }
 }
